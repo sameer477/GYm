@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TOP Fitness centers in India</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0px;
+            border: 0px;
+            padding: 0px;
+        }
+
+        .container {
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            position: absolute;
+        }
+
+        .header {
+            position: absolute;
+            top: -8px;
+            left: 50px;
+            padding-left: 50px;
+            right: 0;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        h2 {
+            margin: 10px 0;
+            text-shadow: 0px 0px 5px white;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .icon {
+            width: 50px;
+            height: 50px;
+            transform: translate(-25px, -25px);
+        }
+
+        .leaflet-div-icon {
+            background: none;
+            border: none;
+        }
+
+        #buttons {
+            /*margin-left: 50px;*/
+            /*display: inline-block;*/
+        }
+
+        #buttons div {
+            display: inline-block;
+            margin-right: 1em;
+            margin-bottom: 1em;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 1px solid black;
+            border-radius: 4px;
+            padding: 4px;
+        }
+
+        #buttons div:hover {
+            background-color: black;
+            color: white;
+            cursor: pointer;
+        }
+
+
+
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+        <h2>Fitness Centers</h2>
+        <div id="buttons">
+        </div>
+    </div>
+    <div class="container">
+        <div id="map"></div>
+    </div>
+
+    <!-- leaflet -->
+    <script src="https://unpkg.com/leaflet@1.3.3/dist/leaflet.js"></script>
+
+    <!-- Demo setup -->
+    <script>
+
+        var theMap = L.map('map', {maxZoom: 14});
+        L.tileLayer('https://3.base.maps.api.here.com/maptile/2.1/maptile/newest/reduced.day/{z}/{x}/{y}/256/png8?app_id=VWEg6e2WzQJrzQ5lzafj&token=pX0Kp1w1sOaPiXJcv261zQ&lg=/eng').addTo(theMap);
+        theMap.attributionControl.addAttribution('Flight data via <a href="http://adsbexchange.com/">ADS-B Exchange</a>');
+        theMap.attributionControl.addAttribution('Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Map data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>');
+
+        var airplaneIcon = new L.DivIcon({html: '<img class="icon" src="treadmill.png">'});
+
+        var airports = [
+            {
+                name: 'Delhi',
+                code: 'delhi',
+                location: [28.632144122388027,77.21534729003906
+          
+          ]
+		  
+            },
+            {
+                name: 'Maharashtra',
+                code: 'maharashtra',
+                location: [          19.096024316250755,72.88647651672363
+          ]
+		 
+            }
+            
+        ];
+
+
+        // center of San Francisco
+
+        theMap.setView([37.7749, -122.4194], 9);
+
+        function addAirportButtons() {
+            airports.forEach(function(airport) {
+                let button = document.createElement("div");
+                button.appendChild(document.createTextNode(airport.name));
+                button.onclick = function() { fetchData(airport) };
+                document.getElementById("buttons").appendChild(button);
+            });
+        }
+
+        var planes = [];
+
+        function renderPlanes(data) {
+            planes.forEach(function (c) { c.remove(); });
+            planes = [];
+
+            data.forEach(function (feature) {
+                var c = L.marker(
+                    [feature.geometry.coordinates[1], feature.geometry.coordinates[0]],
+                    {
+                       icon: airplaneIcon
+                    });
+                c.addTo(theMap);
+                c.bindTooltip('<h3>' + feature.properties.Gyms + '</h3><ul><li> State: ' + feature.properties.State + '</li><li>Address: ' + feature.properties.Address );
+                c.getElement().childNodes[0].style.transform = c.getElement().childNodes[0].style.transform + " rotate(" + feature.properties.Trak + "deg)";
+                planes.push(c);
+            });
+        }
+
+
+
+        function fetchData(airport) {
+            var url = 'https://xyz.api.here.com/hub/spaces/kZU0zunh/search?access_token=oqL1KpgB44a8zWUMHU_DMA&tags=' + airport.code;
+
+            fetch(url).then(resp => resp.json()).then(data => {
+                renderPlanes(data.features);
+            });
+
+            theMap.panTo(airport.location);
+            theMap.setZoom(15);
+        }
+
+        addAirportButtons();
+
+        fetchData(airports[0]);
+
+
+    </script>
+
+  </body>
+</html>
